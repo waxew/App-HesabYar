@@ -24,6 +24,20 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Prepare Android signing tools
+        run: |
+          BUILD_TOOLS=$(find "$ANDROID_SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
+          mkdir -p signing-tools
+          cp "$BUILD_TOOLS/lib/apksigner.jar" signing-tools/
+          cp "$BUILD_TOOLS/zipalign" signing-tools/
+          chmod +x signing-tools/zipalign
+
+      - name: Upload Android signing tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-signing-tools
+          path: signing-tools/
+
       - name: Build APKs
         run: gradle :app:assembleDebug :app:assembleRelease --stacktrace
 
