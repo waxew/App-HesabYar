@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- متن‌های Resource پایه برنامه؛ متن‌های UI فعلی عمدتاً در Compose تعریف شده‌اند. -->
 <resources>
+    <!-- نام رسمی برنامه در Launcher و تنظیمات Android. -->
     <string name="app_name">حسابیار</string>
 </resources>

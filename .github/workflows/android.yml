@@ -1,52 +1,54 @@
+# نام Workflow در تب Actions گیت‌هاب.
 name: Android CI
 
+# Workflow روی هر Push یا Pull Request به main اجرا می‌شود.
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
+# Job اصلی تست و Build حسابیار.
 jobs:
   build:
+    # Runner لینوکسی رسمی GitHub Actions.
     runs-on: ubuntu-latest
+
+    # مراحل Job به ترتیب اجرا می‌شوند.
     steps:
+      # سورس آخرین Commit را داخل Runner دریافت می‌کند.
       - name: Checkout
         uses: actions/checkout@v4
 
+      # JDK 17 همان نسخه‌ای است که تنظیمات Android Gradle Plugin هدف گرفته‌اند.
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
+      # Gradle 8.9 با AGP 8.7.3 سازگار است و چون Wrapper در این مخزن نیست، روی Runner نصب می‌شود.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Prepare Android signing tools
-        run: |
-          BUILD_TOOLS=$(find "$ANDROID_SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          mkdir -p signing-tools
-          cp "$BUILD_TOOLS/lib/apksigner.jar" signing-tools/
-          cp "$BUILD_TOOLS/zipalign" signing-tools/
-          chmod +x signing-tools/zipalign
+      # تست‌های موتور محاسبات قبل از ساخت APK اجرا می‌شوند.
+      - name: Run unit tests
+        run: gradle :app:testDebugUnitTest --stacktrace
 
-      - name: Upload Android signing tools
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-signing-tools
-          path: signing-tools/
-
+      # هر دو خروجی Debug و Release ساخته می‌شوند تا خطای BuildType پنهان نماند.
       - name: Build APKs
         run: gradle :app:assembleDebug :app:assembleRelease --stacktrace
 
+      # APK Debug فقط برای تست توسعه به‌عنوان Artifact نگهداری می‌شود.
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: HesabYar-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
+      # APK Release در CI عمومی بدون کلید خصوصی ساخته می‌شود و بعداً خارج از مخزن امضا می‌شود.
       - name: Upload unsigned release APK
         uses: actions/upload-artifact@v4
         with:

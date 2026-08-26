@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<!-- Theme سطح Activity؛ رنگ‌های اصلی UI داخل Theme.kt و Material 3 مدیریت می‌شوند. -->
+<resources>
+    <!-- تم پایه بدون ActionBar چون TopAppBar در Compose ساخته می‌شود. -->
     <style name="Theme.HesabYar" parent="android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item>
-        <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- نوار وضعیت شفاف است تا Edge-to-Edge به‌درستی نمایش داده شود. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowDisablePreview">true</item>
+
+        <!-- Navigation Bar نیز شفاف می‌ماند و Compose Insets را مدیریت می‌کند. -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <!-- جهت کلی برنامه از Locale و RTL پشتیبانی می‌کند. -->
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

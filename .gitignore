@@ -1,13 +1,19 @@
-*.iml
+# فایل‌های تولیدشده توسط Gradle و Android Studio نباید وارد Git شوند.
 .gradle/
-/local.properties
-/.idea/
+**/build/
+
+# تنظیمات محلی Android SDK فقط مخصوص همان لپ‌تاپ است.
+local.properties
+
+# فایل‌های شخصی IDE و سیستم‌عامل.
+.idea/
+*.iml
 .DS_Store
-/build/
-/captures/
-.externalNativeBuild/
-.cxx/
-app/build/
+Thumbs.db
+
+# کلیدهای امضای Release محرمانه‌اند و هرگز نباید در مخزن عمومی قرار بگیرند.
 *.jks
 *.keystore
-signing.properties
+
+# فایل‌های موقت و لاگ‌ها.
+*.log

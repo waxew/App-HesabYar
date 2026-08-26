@@ -1,2 +1,3 @@
-# HesabYar currently uses only Android/Jetpack APIs that are safe with default R8 rules.
-# Keep this file for future integrations that may require explicit keep rules.
+# قوانین اختصاصی R8/ProGuard حسابیار.
+# در نسخه فعلی کد Reflection پیچیده ندارد و قوانین پیش‌فرض Android کافی هستند.
+# اگر در آینده کتابخانه‌ای نیاز به Keep Rule داشت، قانون آن در همین فایل اضافه می‌شود.

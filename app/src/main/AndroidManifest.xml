@@ -1,25 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest اصلی حسابیار.
+  این فایل مجوزها، Application و Activity شروع برنامه را به Android معرفی می‌کند.
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- اینترنت فقط برای بررسی فایل latest.json و تشخیص آپدیت جدید استفاده می‌شود. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- مشخصات کلی Application حسابیار. -->
     <application
         android:allowBackup="true"
-        android:fullBackupContent="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.HesabYar">
+
+        <!-- Activity اصلی و تنها نقطه ورود رابط کاربری Compose. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="unspecified">
+
+            <!-- این Intent Filter باعث نمایش حسابیار در Launcher گوشی می‌شود. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
-
 </manifest>
