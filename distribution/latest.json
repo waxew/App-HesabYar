@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0.0",
-  "downloadUrl": "https://github.com/waxew/App-HesabYar/releases/latest",
-  "notes": "نسخه ۱.۰ حسابیار نصب است. Manifest پس از آماده شدن APK امضاشده ۱.۰.۱ به‌روزرسانی می‌شود."
+  "versionCode": 2,
+  "versionName": "1.0.1",
+  "downloadUrl": "https://github.com/waxew/App-HesabYar",
+  "notes": "نسخه ۱.۰.۱ حسابیار: منوی همبرگری، اصلاح کامل دکمه بازگشت، صفحه‌های درباره/تماس، تنظیم اعلان آپدیت، تست فرمول‌ها و رفع باگ‌های محاسباتی و ورودی اعداد."
 }
