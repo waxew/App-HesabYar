@@ -54,3 +54,22 @@ jobs:
         with:
           name: HesabYar-release-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
+
+      # یک Snapshot دقیق از همان سورسی که تست و Build شد می‌سازیم؛ فایل‌های Build و Git داخل آن قرار نمی‌گیرند.
+      - name: Prepare source snapshot
+        run: |
+          tar \
+            --exclude=.git \
+            --exclude=.gradle \
+            --exclude='*/build' \
+            --exclude='*/build/*' \
+            -czf HesabYar-source-snapshot.tar.gz \
+            .github .gitignore README.md VERSION.txt CHANGELOG.md ROADMAP.md \
+            app build.gradle.kts gradle.properties settings.gradle.kts distribution
+
+      # Snapshot سورس برای ساخت ZIP خصوصی نهایی و نگهداری آرشیو هر Build آپلود می‌شود.
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: HesabYar-source-snapshot
+          path: HesabYar-source-snapshot.tar.gz
