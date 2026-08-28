@@ -141,6 +141,8 @@ private fun HesabYarShell(
     onProfileImageChanged: (String) -> Unit,
     initialToolName: String?
 ) {
+    // Context در بدنه Composable گرفته می‌شود تا callbackهای معمولی مجبور به فراخوانی LocalContext.current نباشند.
+    val context = LocalContext.current
     var pageName by rememberSaveable { mutableStateOf(RootPage.HOME.name) }
     var selectedToolName by rememberSaveable { mutableStateOf(initialToolName?.takeIf { runCatching { CalculatorKind.valueOf(it) }.isSuccess }) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -186,7 +188,7 @@ private fun HesabYarShell(
                 onProfileNameChanged = onProfileNameChanged,
                 onProfileImageChanged = onProfileImageChanged,
                 onNavigate = { navigate(it); scope.launch { drawerState.close() } },
-                onShare = { shareApp(LocalContext.current); scope.launch { drawerState.close() } }
+                onShare = { shareApp(context); scope.launch { drawerState.close() } }
             )
         }
     ) {
