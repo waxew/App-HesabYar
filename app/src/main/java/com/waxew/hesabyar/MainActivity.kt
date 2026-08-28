@@ -1,35 +1,45 @@
 package com.waxew.hesabyar
 
-// Bundle وضعیت ذخیره‌شده Activity را هنگام بازسازی سیستم نگه می‌دارد.
+import android.content.Intent
 import android.os.Bundle
-
-// ComponentActivity میزبان سبک و مناسب Jetpack Compose است.
 import androidx.activity.ComponentActivity
-
-// setContent درخت UI برنامه را با Compose راه‌اندازی می‌کند.
 import androidx.activity.compose.setContent
-
-// WindowCompat برای فعال‌کردن طراحی Edge-to-Edge استفاده می‌شود.
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.view.WindowCompat
 
 /**
  * Activity اصلی حسابیار.
- *
- * این کلاس عمداً کوچک نگه داشته شده است؛ منطق برنامه و ناوبری داخل Composableهای حسابیار قرار دارد.
+ * علاوه بر اجرای Compose، مقصدی که از Widget آمده را به Shell منتقل می‌کند.
  */
 class MainActivity : ComponentActivity() {
 
-    /** نقطه ورود Activity هنگام اجرای برنامه. */
+    // نام ابزار ورودی در State نگه داشته می‌شود تا Intent جدید هم بدون ساخت معماری ناوبری جدا اعمال شود.
+    private var initialToolName by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // ابتدا چرخه حیات استاندارد Android اجرا می‌شود.
         super.onCreate(savedInstanceState)
 
-        // Compose اجازه دارد پشت Status Bar و Navigation Bar رسم شود؛ Insets داخل UI مدیریت می‌شوند.
+        // محتوای برنامه اجازه دارد زیر System Barها رسم شود و SafeDrawing داخل Compose فاصله لازم را می‌دهد.
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        // ریشه رابط کاربری حسابیار روی Activity قرار می‌گیرد.
-        setContent {
-            HesabYarApp()
-        }
+        // اگر برنامه از Widget باز شده باشد، ابزار مقصد از Intent خوانده می‌شود.
+        initialToolName = intent.getStringExtra(EXTRA_TOOL)
+
+        // Root UI برنامه با مقصد اختیاری Widget اجرا می‌شود.
+        setContent { HesabYarApp(initialToolName = initialToolName) }
+    }
+
+    /** وقتی Activity موجود دوباره از Widget باز شود مقصد تازه اعمال می‌شود. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        initialToolName = intent.getStringExtra(EXTRA_TOOL)
+    }
+
+    companion object {
+        // کلید عمومی Intent برای باز کردن مستقیم ماشین‌حساب از Widget.
+        const val EXTRA_TOOL = "hesabyar_tool"
     }
 }

@@ -56,26 +56,33 @@ class SettingsRepository(context: Context) {
             prefs.edit().putString(KEY_CURRENCY, value.name).apply()
         }
 
-    /**
-     * مشخص می‌کند بررسی خودکار نسخه جدید فعال باشد یا نه.
-     * این گزینه همان بخش «اعلان‌ها» در تنظیمات است و به‌طور پیش‌فرض فعال است.
-     */
+    /** مشخص می‌کند بررسی خودکار نسخه جدید فعال باشد یا نه. */
     var notificationsEnabled: Boolean
         get() = prefs.getBoolean(KEY_NOTIFICATIONS, true)
         set(value) {
-            // وضعیت اعلان/بررسی نسخه جدید ذخیره می‌شود.
             prefs.edit().putBoolean(KEY_NOTIFICATIONS, value).apply()
+        }
+
+    /** نام نمایشی کاربر در بالای Drawer. */
+    var profileName: String
+        get() = prefs.getString(KEY_PROFILE_NAME, "کاربر حسابیار")?.ifBlank { "کاربر حسابیار" } ?: "کاربر حسابیار"
+        set(value) {
+            prefs.edit().putString(KEY_PROFILE_NAME, value.trim().take(40)).apply()
+        }
+
+    /** URI تصویر پروفایل انتخاب‌شده؛ فایل تصویر داخل Repository عمومی ذخیره نمی‌شود. */
+    var profileImageUri: String
+        get() = prefs.getString(KEY_PROFILE_IMAGE_URI, "") ?: ""
+        set(value) {
+            prefs.edit().putString(KEY_PROFILE_IMAGE_URI, value).apply()
         }
 
     /** کلیدهای SharedPreferences در یک محل ثابت نگه داشته می‌شوند تا در آپدیت‌ها تغییر نکنند. */
     private companion object {
-        // کلید Theme.
         const val KEY_THEME = "theme"
-
-        // کلید واحد پول.
         const val KEY_CURRENCY = "currency"
-
-        // کلید اعلان نسخه‌های جدید.
         const val KEY_NOTIFICATIONS = "notifications_enabled"
+        const val KEY_PROFILE_NAME = "profile_name"
+        const val KEY_PROFILE_IMAGE_URI = "profile_image_uri"
     }
 }
