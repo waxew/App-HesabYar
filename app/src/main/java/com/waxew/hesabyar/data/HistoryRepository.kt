@@ -2,6 +2,7 @@ package com.waxew.hesabyar.data
 
 // Context برای دسترسی به حافظه خصوصی برنامه استفاده می‌شود.
 import android.content.Context
+import com.waxew.hesabyar.HesabYarWidgetProvider
 
 // JSONArray لیست تاریخچه را به یک رشته JSON تبدیل می‌کند.
 import org.json.JSONArray
@@ -32,7 +33,7 @@ data class HistoryEntry(
  *
  * در نسخه‌های بعدی می‌توان این کلاس را به Room مهاجرت داد؛ کل UI فقط با همین Repository کار می‌کند.
  */
-class HistoryRepository(context: Context) {
+class HistoryRepository(private val context: Context) {
 
     // فایل خصوصی تاریخچه. Android هنگام Update آن را حفظ می‌کند.
     private val prefs = context.getSharedPreferences("hesabyar_history", Context.MODE_PRIVATE)
@@ -83,6 +84,9 @@ class HistoryRepository(context: Context) {
 
         // JSON نهایی در حافظه خصوصی برنامه ذخیره می‌شود.
         prefs.edit().putString(KEY_ITEMS, array.toString()).apply()
+
+        // Widget نیز بلافاصله آخرین نتیجه ذخیره‌شده را نمایش می‌دهد.
+        HesabYarWidgetProvider.updateAll(context, items.firstOrNull())
     }
 
     /** ثابت‌های مربوط به ذخیره تاریخچه. */

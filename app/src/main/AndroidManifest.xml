@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Manifest اصلی حسابیار.
-  این فایل مجوزها، Application و Activity شروع برنامه را به Android معرفی می‌کند.
--->
+<!-- Manifest اصلی حسابیار: Activity، Widget و FileProvider خروجی‌ها را به Android معرفی می‌کند. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- اینترنت فقط برای بررسی فایل latest.json و تشخیص آپدیت جدید استفاده می‌شود. -->
+    <!-- اینترنت فقط برای بررسی latest.json و باز کردن لینک نسخه جدید استفاده می‌شود. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- مشخصات کلی Application حسابیار. -->
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -16,17 +12,39 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HesabYar">
 
-        <!-- Activity اصلی و تنها نقطه ورود رابط کاربری Compose. -->
+        <!-- Activity اصلی Compose؛ Widget نیز همین Activity را با مقصد مستقیم باز می‌کند. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:screenOrientation="unspecified">
-
-            <!-- این Intent Filter باعث نمایش حسابیار در Launcher گوشی می‌شود. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Widget حسابیار که آخرین نتیجه و میانبر ابزارها را روی Home Screen نشان می‌دهد. -->
+        <receiver
+            android:name=".HesabYarWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/hesabyar_widget_info" />
+        </receiver>
+
+        <!-- FileProvider فقط فایل‌های cache/export را برای Share موقت در اختیار برنامه مقصد می‌گذارد. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

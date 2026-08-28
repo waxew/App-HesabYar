@@ -1,32 +1,11 @@
 package com.waxew.hesabyar
 
-// Layoutهای پایه Compose برای چینش عناصر.
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkAdd
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,98 +20,89 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** قالب مشترک تمام ماشین‌حساب‌ها. */
+/** قالب مشترک صفحات محاسباتی؛ عنوان، توضیح و بدنه قابل اسکرول را یکدست نگه می‌دارد. */
 @Composable
 fun CalculatorLayout(title: String, subtitle: String, content: @Composable ColumnScope.() -> Unit) {
-    // LazyColumn باعث می‌شود روی نمایشگر کوچک نیز تمام فیلدها قابل دسترسی باشند.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp),
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // سربرگ محتوایی هر ماشین‌حساب.
         item {
-            Text(text = title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text(text = subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        // بدنه‌ای که صفحه ابزار ارسال کرده است.
-        item {
-            Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp), content = content)
-        }
-        // فاصله انتهایی.
+        item { Column(verticalArrangement = Arrangement.spacedBy(12.dp), content = content) }
         item { Spacer(Modifier.height(16.dp)) }
     }
 }
 
-/** فیلد عددی استاندارد حسابیار که اعداد فارسی/عربی/انگلیسی را می‌پذیرد. */
+/**
+ * فیلد عددی استاندارد حسابیار.
+ * مبالغ هنگام تایپ سه‌رقم سه‌رقم جدا می‌شوند؛ مثال 12000000 -> 12,000,000.
+ * مقدار واقعی با [toNumber] بدون کاما برای محاسبه خوانده می‌شود.
+ */
 @Composable
-fun NumberField(label: String, value: String, suffix: String? = null, onValue: (String) -> Unit) {
-    // فیلد ورودی Material 3 رسم می‌شود.
+fun NumberField(
+    label: String,
+    value: String,
+    suffix: String? = null,
+    useThousandsSeparator: Boolean = suffix != "%",
+    onValue: (String) -> Unit
+) {
     OutlinedTextField(
         value = value,
-        onValueChange = { raw ->
-            // ورودی کاربر به فرمت استاندارد عددی تبدیل می‌شود.
-            val normalized = raw.sanitizeNumericInput()
-            // فقط وقتی حداکثر یک ممیز وجود داشته باشد، State به‌روزرسانی می‌شود.
-            if (normalized.count { it == '.' } <= 1) onValue(normalized)
-        },
+        onValueChange = { raw -> onValue(formatNumericInputForDisplay(raw, useThousandsSeparator)) },
         label = { Text(label) },
-        suffix = suffix?.let { suffixText -> { Text(suffixText) } },
+        suffix = suffix?.let { text -> { Text(text) } },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         singleLine = true,
         modifier = Modifier.fillMaxWidth()
     )
 }
 
-/** نوار کوچک نتیجه برای محاسبه سریع صفحه خانه. */
+/** نوار کوچک نتیجه برای محاسبات سریع. */
 @Composable
 fun ResultStrip(label: String, value: String) {
-    // Surface با رنگ Primary Container نتیجه را از فیلدها جدا می‌کند.
     Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.large) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            Modifier.fillMaxWidth().padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // عنوان نتیجه.
             Text(label)
-            // مقدار نتیجه برجسته‌تر است.
             Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
     }
 }
 
-/** کارت نتیجه کامل با مقدار اصلی، جزئیات و هشدار اختیاری. */
+/** کارت نتیجه کامل با خروجی اصلی، جزئیات و هشدار اختیاری. */
 @Composable
-fun ResultCard(primaryLabel: String, primaryValue: String, rows: List<Pair<String, String>>, warning: String? = null) {
-    // Card نتیجه با رنگ ملایم نمایش داده می‌شود.
+fun ResultCard(
+    primaryLabel: String,
+    primaryValue: String,
+    rows: List<Pair<String, String>>,
+    warning: String? = null
+) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(18.dp),
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)
-        ) {
-            // عنوان خروجی اصلی.
+        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(primaryLabel, color = MaterialTheme.colorScheme.onPrimaryContainer)
-            // مقدار اصلی.
             Text(primaryValue, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            // ردیف‌های جزئیات.
             rows.forEach { (label, value) ->
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = .2f))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(label)
                     Text(value, fontWeight = FontWeight.SemiBold)
                 }
             }
-            // هشدار فقط در صورت وجود نمایش داده می‌شود.
             warning?.let { Text(it, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
         }
     }
 }
 
-/** دکمه ذخیره نتیجه در تاریخچه. */
+/** دکمه استاندارد ذخیره نتیجه در تاریخچه. */
 @Composable
 fun SaveButton(onClick: () -> Unit) {
-    // Button تمام عرض صفحه را می‌گیرد.
     Button(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Icon(Icons.Outlined.BookmarkAdd, contentDescription = null)
         Spacer(Modifier.width(8.dp))
@@ -140,84 +110,85 @@ fun SaveButton(onClick: () -> Unit) {
     }
 }
 
-/** کارت استاندارد بخش‌های تنظیمات. */
+/** کارت مشترک تنظیمات/ورودی‌های گروه‌بندی‌شده. */
 @Composable
 fun SettingsCard(title: String, icon: ImageVector, content: @Composable ColumnScope.() -> Unit) {
-    // ElevatedCard مرزبندی بصری تنظیمات را ایجاد می‌کند.
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(18.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+    ElevatedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(8.dp))
                 Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
-            // محتوای اختصاصی تنظیم.
             content()
         }
     }
 }
 
-/** عنوان استاندارد بخش‌های صفحه خانه. */
+/** تیتر ساده بخش‌ها. */
 @Composable
-fun SectionTitle(text: String) {
-    Text(text, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-}
+fun SectionTitle(text: String) = Text(text, fontSize = 19.sp, fontWeight = FontWeight.Bold)
 
-/** حالت خالی برای تاریخچه یا لیست‌های بدون داده. */
+/** حالت خالی برای لیست‌ها. */
 @Composable
 fun EmptyState(icon: ImageVector, text: String) {
-    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)) {
+    Box(Modifier.fillMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
             Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
-/** اعداد فارسی/عربی را استاندارد و جداکننده هزارگان را حذف می‌کند. */
+/**
+ * ورودی عدد را برای نمایش فرمت می‌کند. رقم‌های فارسی/عربی پذیرفته می‌شوند و جداکننده قبلی حذف می‌شود.
+ * نقطه اعشار حفظ می‌شود؛ بنابراین 12345.5 به 12,345.5 تبدیل می‌شود.
+ */
+fun formatNumericInputForDisplay(raw: String, useThousandsSeparator: Boolean = true): String {
+    val sanitized = raw.sanitizeNumericInput()
+    if (sanitized.isEmpty()) return ""
+
+    val firstDot = sanitized.indexOf('.')
+    val integerRaw = if (firstDot >= 0) sanitized.substring(0, firstDot) else sanitized
+    val fractionRaw = if (firstDot >= 0) sanitized.substring(firstDot + 1).replace(".", "") else ""
+    val hasDecimal = firstDot >= 0
+    val integerNormalized = integerRaw.trimStart('0').ifEmpty { "0" }
+    val integerDisplay = if (useThousandsSeparator) {
+        integerNormalized.reversed().chunked(3).joinToString(",").reversed()
+    } else integerNormalized
+
+    return if (hasDecimal) "$integerDisplay.$fractionRaw" else integerDisplay
+}
+
+/** تبدیل تمام رقم‌های قابل انتظار به فرم عددی انگلیسی بدون جداکننده هزارگان. */
 fun String.sanitizeNumericInput(): String = buildString {
-    // هر کاراکتر ورودی جداگانه بررسی می‌شود.
-    this@sanitizeNumericInput.forEach { character ->
-        when (character) {
-            // ارقام فارسی.
+    this@sanitizeNumericInput.forEach { ch ->
+        when (ch) {
             '۰' -> append('0'); '۱' -> append('1'); '۲' -> append('2'); '۳' -> append('3'); '۴' -> append('4')
             '۵' -> append('5'); '۶' -> append('6'); '۷' -> append('7'); '۸' -> append('8'); '۹' -> append('9')
-            // ارقام عربی.
             '٠' -> append('0'); '١' -> append('1'); '٢' -> append('2'); '٣' -> append('3'); '٤' -> append('4')
             '٥' -> append('5'); '٦' -> append('6'); '٧' -> append('7'); '٨' -> append('8'); '٩' -> append('9')
-            // ممیز فارسی/عربی.
             '٫' -> append('.')
-            // جداکننده‌های هزارگان حذف می‌شوند.
             ',', '٬', '،', ' ', '_' -> Unit
-            // نقطه و رقم انگلیسی نگه داشته می‌شوند.
-            '.' -> append('.'); in '0'..'9' -> append(character)
-            // سایر حروف و نمادها نادیده گرفته می‌شوند.
+            '.' -> append('.')
+            in '0'..'9' -> append(ch)
             else -> Unit
         }
     }
 }
 
-/** رشته ورودی را پس از پاک‌سازی به Double تبدیل می‌کند. */
+/** رشته نمایشی را به مقدار واقعی Double تبدیل می‌کند. */
 fun String.toNumber(): Double? = sanitizeNumericInput().toDoubleOrNull()
 
-// Symbols ثابت US برای جلوگیری از وابستگی DecimalFormat به Locale دستگاه.
-private val decimalSymbols = DecimalFormatSymbols(Locale.US)
-// قالب مبالغ بدون اعشار و با جداکننده سه‌رقمی.
-private val moneyFormat = DecimalFormat("#,###", decimalSymbols)
-// قالب درصدها و خروجی‌های عمومی با حداکثر دو رقم اعشار.
-private val decimalFormat = DecimalFormat("#,##0.##", decimalSymbols)
+private val symbols = DecimalFormatSymbols(Locale.US)
+private val moneyFormat = DecimalFormat("#,###", symbols)
+private val decimalFormat = DecimalFormat("#,##0.##", symbols)
 
-/** عدد مالی را با جداکننده هزارگان نمایش می‌دهد. */
+/** نمایش مبلغ با جداکننده هزارگان. */
 fun Double.money(): String = moneyFormat.format(this)
-/** درصد را با حداکثر دو رقم اعشار نمایش می‌دهد. */
+/** نمایش درصد با حداکثر دو رقم اعشار. */
 fun Double.percent(): String = decimalFormat.format(this)
-/** عدد عمومی را بدون صفرهای اعشاری اضافی نمایش می‌دهد. */
+/** نمایش عدد عمومی بدون صفرهای اضافی. */
 fun Double.clean(): String = decimalFormat.format(this)
-
-/** timestamp تاریخچه را به یک تاریخ/ساعت کوتاه تبدیل می‌کند. */
-fun Long.shortDate(): String {
-    // Formatter در هر فراخوانی ساخته می‌شود تا مشکل Thread Safety نداشته باشد.
-    val formatter = SimpleDateFormat("MM/dd  HH:mm", Locale.getDefault())
-    // timestamp به Date و سپس String تبدیل می‌شود.
-    return formatter.format(Date(this))
-}
+/** نمایش زمان کوتاه برای تاریخچه. */
+fun Long.shortDate(): String = SimpleDateFormat("MM/dd  HH:mm", Locale.getDefault()).format(Date(this))

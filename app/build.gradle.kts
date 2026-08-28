@@ -28,10 +28,10 @@ android {
         targetSdk = 35
 
         // هر انتشار جدید باید versionCode بزرگ‌تری از نسخه قبل داشته باشد.
-        versionCode = 2
+        versionCode = 3
 
         // نسخه نمایشی برنامه که در صفحه «درباره نرم افزار» دیده می‌شود.
-        versionName = "1.0.1"
+        versionName = "2.0.0"
 
         // Runner استاندارد تست‌های Instrumentation Android.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -168,6 +168,12 @@ dependencies {
 
     // Manifest کمکی برای تست UI فقط در Debug.
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // مدل OCR به‌صورت Bundled داخل APK قرار می‌گیرد تا برای خواندن عدد قیمت به دانلود مدل وابسته نباشد.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+
+    // مدل Barcode نیز Bundled است و اسکن QR/Barcode را روی خود دستگاه انجام می‌دهد.
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
     // JUnit برای تست خودکار موتور محاسبات و جلوگیری از Regression فرمول‌ها.
     testImplementation("junit:junit:4.13.2")

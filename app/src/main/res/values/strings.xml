@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- متن‌های Resource پایه برنامه؛ متن‌های UI فعلی عمدتاً در Compose تعریف شده‌اند. -->
+<!-- رشته‌های Resource که Android خارج از Compose به آن‌ها نیاز دارد. -->
 <resources>
-    <!-- نام رسمی برنامه در Launcher و تنظیمات Android. -->
     <string name="app_name">حسابیار</string>
+    <string name="widget_description">نمایش آخرین نتیجه و دسترسی سریع به تخفیف، سود و درصد</string>
 </resources>
