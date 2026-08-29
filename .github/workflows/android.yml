@@ -26,8 +26,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # هنگام اولین اجرای شاخه v3، قطعات متنی Overlay به آرشیو اصلی برگردانده می‌شوند.
-      # Checksum ثابت مانع Build سورس ناقص یا خراب می‌شود.
+      # در اجرای شاخه v3 ابتدا سورس اصلی نسخه ۳ و سپس اصلاحات نهایی روی آن اعمال می‌شوند.
+      # Checksum ثابت هر آرشیو مانع Build سورس ناقص یا خراب می‌شود.
       - name: Materialize staged v3 source
         shell: bash
         run: |
@@ -35,6 +35,11 @@ jobs:
             cat ci/v3-overlay.b64.part* | base64 -d > /tmp/hesabyar-v3-overlay.tar.gz
             echo '0bd0d543825d71e82dbbf4d9a097447a8462fe19f4688fbbf13fc9717b1e1595  /tmp/hesabyar-v3-overlay.tar.gz' | sha256sum -c -
             tar -xzf /tmp/hesabyar-v3-overlay.tar.gz -C .
+          fi
+          if compgen -G 'ci/v3-fix-overlay.b64.part*' > /dev/null; then
+            cat ci/v3-fix-overlay.b64.part* | base64 -d > /tmp/hesabyar-v3-fix-overlay.tar.gz
+            echo '99e3acc0c86a3eef30dc7e72a35c872680d956adb92b81f9ac69216d58589eee  /tmp/hesabyar-v3-fix-overlay.tar.gz' | sha256sum -c -
+            tar -xzf /tmp/hesabyar-v3-fix-overlay.tar.gz -C .
           fi
 
       # JDK 17 همان نسخه‌ای است که تنظیمات Android Gradle Plugin هدف گرفته‌اند.
@@ -91,14 +96,14 @@ jobs:
           name: HesabYar-source-snapshot
           path: HesabYar-source-snapshot.tar.gz
 
-      # فقط پس از عبور موفق تست و Build، Overlay به فایل‌های واقعی مخزن تبدیل می‌شود.
+      # فقط پس از عبور موفق تست و Build، Overlayها به فایل‌های واقعی مخزن تبدیل می‌شوند.
       # اجرای بعدی CI همین Commit واقعی را دوباره از صفر Build می‌کند.
       - name: Commit materialized v3 source
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/hesabyar-v3' }}
         shell: bash
         run: |
-          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null; then
-            rm -f ci/v3-overlay.b64.part*
+          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null || compgen -G 'ci/v3-fix-overlay.b64.part*' > /dev/null; then
+            rm -f ci/v3-overlay.b64.part* ci/v3-fix-overlay.b64.part*
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add -A
