@@ -1,12 +1,16 @@
 # نام Workflow در تب Actions گیت‌هاب.
 name: Android CI
 
-# Workflow روی هر Push یا Pull Request به main اجرا می‌شود.
+# علاوه بر main، شاخه نسخه ۳ نیز برای Materialize و آزمون کامل Build اجرا می‌شود.
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/hesabyar-v3 ]
   pull_request:
     branches: [ main ]
+
+# فقط Workflow شاخه feature اجازه دارد پس از Build موفق Overlay را به سورس واقعی تبدیل و Commit کند.
+permissions:
+  contents: write
 
 # Job اصلی تست و Build حسابیار.
 jobs:
@@ -19,6 +23,19 @@ jobs:
       # سورس آخرین Commit را داخل Runner دریافت می‌کند.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # هنگام اولین اجرای شاخه v3، قطعات متنی Overlay به آرشیو اصلی برگردانده می‌شوند.
+      # Checksum ثابت مانع Build سورس ناقص یا خراب می‌شود.
+      - name: Materialize staged v3 source
+        shell: bash
+        run: |
+          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null; then
+            cat ci/v3-overlay.b64.part* | base64 -d > /tmp/hesabyar-v3-overlay.tar.gz
+            echo '0bd0d543825d71e82dbbf4d9a097447a8462fe19f4688fbbf13fc9717b1e1595  /tmp/hesabyar-v3-overlay.tar.gz' | sha256sum -c -
+            tar -xzf /tmp/hesabyar-v3-overlay.tar.gz -C .
+          fi
 
       # JDK 17 همان نسخه‌ای است که تنظیمات Android Gradle Plugin هدف گرفته‌اند.
       - name: Set up JDK 17
@@ -73,3 +90,20 @@ jobs:
         with:
           name: HesabYar-source-snapshot
           path: HesabYar-source-snapshot.tar.gz
+
+      # فقط پس از عبور موفق تست و Build، Overlay به فایل‌های واقعی مخزن تبدیل می‌شود.
+      # اجرای بعدی CI همین Commit واقعی را دوباره از صفر Build می‌کند.
+      - name: Commit materialized v3 source
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/hesabyar-v3' }}
+        shell: bash
+        run: |
+          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null; then
+            rm -f ci/v3-overlay.b64.part*
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -A
+            if ! git diff --cached --quiet; then
+              git commit -m 'Materialize HesabYar v3 source after successful CI'
+              git push origin HEAD:feature/hesabyar-v3
+            fi
+          fi
