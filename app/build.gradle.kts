@@ -28,10 +28,10 @@ android {
         targetSdk = 35
 
         // هر انتشار جدید باید versionCode بزرگ‌تری از نسخه قبل داشته باشد.
-        versionCode = 3
+        versionCode = 4
 
         // نسخه نمایشی برنامه که در صفحه «درباره نرم افزار» دیده می‌شود.
-        versionName = "2.0.0"
+        versionName = "3.0.0"
 
         // Runner استاندارد تست‌های Instrumentation Android.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

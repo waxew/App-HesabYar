@@ -1,6 +1,6 @@
 {
-  "versionCode": 3,
-  "versionName": "2.0.0",
+  "versionCode": 4,
+  "versionName": "3.0.0",
   "downloadUrl": "https://github.com/waxew/App-HesabYar",
-  "notes": "نسخه ۲.۰.۰ حسابیار: جداکننده هزارگان هنگام ورود مبلغ، دستیار خرید و بودجه، دستیار فروشنده حرفه‌ای، دفترچه قیمت، OCR و بارکد، گزارش‌ها، خروجی PDF/CSV/Excel، Backup/Restore، Widget صفحه اصلی و منوی همبرگری جدید."
+  "notes": "نسخه ۳.۰.۰ حسابیار: مرکز ابزارهای حرفه‌ای، پروفایل و مقایسه مارکت‌پلیس، خرید نقد/اقساط، تحلیل روند قیمت و Shrinkflation، هشدار افت Margin، What-if، فاکتور آفلاین/PDF، چند پروفایل کاری، Import CSV/XLSX، Backup رمزدار AES-256-GCM، OCR ساختاریافته، Widget واکنش‌گرا، App Shortcuts، Quick Settings Tile، جستجو/Favorite، تبدیل واحد و ارز، فرمان فارسی و Cash Check."
 }

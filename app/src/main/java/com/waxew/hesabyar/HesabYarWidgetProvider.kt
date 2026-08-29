@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.widget.RemoteViews
 import com.waxew.hesabyar.data.HistoryEntry
 import com.waxew.hesabyar.data.HistoryRepository
@@ -17,7 +18,12 @@ import com.waxew.hesabyar.data.HistoryRepository
 class HesabYarWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, appWidgetIds: IntArray) {
         val last = HistoryRepository(context).load().firstOrNull()
-        appWidgetIds.forEach { id -> manager.updateAppWidget(id, buildViews(context, last)) }
+        appWidgetIds.forEach { id -> manager.updateAppWidget(id, buildViews(context, last, manager.getAppWidgetOptions(id))) }
+    }
+
+    override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, appWidgetId: Int, newOptions: Bundle) {
+        super.onAppWidgetOptionsChanged(context, manager, appWidgetId, newOptions)
+        manager.updateAppWidget(appWidgetId, buildViews(context, HistoryRepository(context).load().firstOrNull(), newOptions))
     }
 
     companion object {
@@ -25,12 +31,14 @@ class HesabYarWidgetProvider : AppWidgetProvider() {
         fun updateAll(context: Context, last: HistoryEntry?) {
             val manager = AppWidgetManager.getInstance(context)
             val component = ComponentName(context, HesabYarWidgetProvider::class.java)
-            manager.getAppWidgetIds(component).forEach { id -> manager.updateAppWidget(id, buildViews(context, last)) }
+            manager.getAppWidgetIds(component).forEach { id -> manager.updateAppWidget(id, buildViews(context, last, manager.getAppWidgetOptions(id))) }
         }
 
         /** RemoteViews به‌دلیل محدودیت Widget از layout XML ساده استفاده می‌کند. */
-        private fun buildViews(context: Context, last: HistoryEntry?): RemoteViews {
-            return RemoteViews(context.packageName, R.layout.widget_hesabyar).apply {
+        private fun buildViews(context: Context, last: HistoryEntry?, options: Bundle? = null): RemoteViews {
+            val width = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 250) ?: 250
+            val layout = if (width < 220) R.layout.widget_hesabyar_compact else R.layout.widget_hesabyar
+            return RemoteViews(context.packageName, layout).apply {
                 setTextViewText(R.id.widget_version, "حسابیار ${BuildConfig.VERSION_NAME}")
                 setTextViewText(R.id.widget_last_title, last?.title ?: "آخرین نتیجه")
                 setTextViewText(R.id.widget_last_result, last?.result ?: "هنوز نتیجه‌ای ذخیره نشده")
