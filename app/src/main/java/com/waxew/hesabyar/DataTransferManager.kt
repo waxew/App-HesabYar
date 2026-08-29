@@ -9,6 +9,7 @@ import androidx.core.content.FileProvider
 import com.waxew.hesabyar.data.CurrencyMode
 import com.waxew.hesabyar.data.HistoryEntry
 import com.waxew.hesabyar.data.PriceBookRepository
+import com.waxew.hesabyar.data.ProRepository
 import com.waxew.hesabyar.data.SettingsRepository
 import com.waxew.hesabyar.data.ShoppingRepository
 import com.waxew.hesabyar.data.ThemeMode
@@ -127,14 +128,15 @@ object DataTransferManager {
         history: List<HistoryEntry>,
         settings: SettingsRepository,
         shopping: ShoppingRepository,
-        priceBook: PriceBookRepository
+        priceBook: PriceBookRepository,
+        pro: ProRepository? = null
     ): File {
         val historyArray = JSONArray()
         history.forEach { entry ->
             historyArray.put(JSONObject().put("id", entry.id).put("title", entry.title).put("details", entry.details).put("result", entry.result).put("createdAt", entry.createdAt))
         }
         val root = JSONObject()
-            .put("schemaVersion", 2)
+            .put("schemaVersion", 3)
             .put("appVersion", BuildConfig.VERSION_NAME)
             .put("createdAt", System.currentTimeMillis())
             .put("history", historyArray)
@@ -146,6 +148,7 @@ object DataTransferManager {
                 .put("profileImageUri", settings.profileImageUri))
             .put("shopping", shopping.exportJson())
             .put("priceBook", priceBook.exportJson())
+        pro?.let { root.put("proV3", it.exportJson()) }
         return exportFile(context, "HesabYar-backup.json").apply { writeText(root.toString(2), Charsets.UTF_8) }
     }
 
@@ -154,7 +157,8 @@ object DataTransferManager {
         json: String,
         settings: SettingsRepository,
         shopping: ShoppingRepository,
-        priceBook: PriceBookRepository
+        priceBook: PriceBookRepository,
+        pro: ProRepository? = null
     ): RestoreResult? = runCatching {
         val root = JSONObject(json)
         val historyArray = root.optJSONArray("history") ?: JSONArray()
@@ -179,6 +183,7 @@ object DataTransferManager {
         settings.profileImageUri = settingsJson.optString("profileImageUri", "")
         root.optJSONObject("shopping")?.let(shopping::importJson)
         root.optJSONObject("priceBook")?.let(priceBook::importJson)
+        root.optJSONObject("proV3")?.let { pro?.importJson(it) }
 
         RestoreResult(history, settings.themeMode, settings.currencyMode, settings.notificationsEnabled, settings.profileName, settings.profileImageUri)
     }.getOrNull()

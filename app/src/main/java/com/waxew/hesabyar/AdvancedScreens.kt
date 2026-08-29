@@ -254,8 +254,13 @@ fun ScannerScreen() {
         recognizer.process(InputImage.fromBitmap(bitmap, 0))
             .addOnSuccessListener { text ->
                 val numbers = extractLikelyPrices(text.text)
+                val structured = V3DataTools.parseStructuredInvoiceText(text.text)
                 resultText = buildString {
                     if (text.text.isNotBlank()) appendLine(text.text.trim())
+                    if (structured.isNotEmpty()) {
+                        appendLine(); appendLine("ردیف‌های احتمالی فاکتور:")
+                        structured.take(20).forEach { (title, value) -> appendLine("• $title → ${value.money()}") }
+                    }
                     if (numbers.isNotEmpty()) {
                         appendLine(); appendLine("اعداد محتمل قیمت:")
                         numbers.forEach { appendLine(it.money()) }
@@ -299,7 +304,7 @@ fun ScannerScreen() {
         item { Button(onClick = { camera.launch(null) }, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Outlined.PhotoCamera, null); Spacer(Modifier.width(8.dp)); Text("باز کردن دوربین") } }
         item { Text(status, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         if (resultText.isNotBlank()) item { ElevatedCard(Modifier.fillMaxWidth()) { Text(resultText, Modifier.padding(16.dp)) } }
-        item { Text("نکته: مدل OCR این نسخه برای اعداد و متن لاتین بهینه است؛ در فاکتور فارسی معمولاً اعداد قیمت قابل استخراج‌اند اما دقت متن فارسی محدودتر است.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        item { Text("نسخه 3 علاوه بر استخراج اعداد، خطوط فاکتور را هم به‌صورت احتمالی به نام قلم + مبلغ تفکیک می‌کند. دقت نهایی به کیفیت تصویر و فونت فاکتور وابسته است.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
 }
 
@@ -334,12 +339,14 @@ fun DataToolsScreen(
     val context = LocalContext.current
     val shopping = remember { ShoppingRepository(context) }
     val priceBook = remember { PriceBookRepository(context) }
+    // داده‌های ابزارهای حرفه‌ای نسخه 3 نیز در Backup عمومی نگهداری می‌شوند.
+    val pro = remember { ProRepository(context) }
     var message by rememberSaveable { mutableStateOf("") }
 
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
             val json = runCatching { context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }.getOrNull()
-            val restored = json?.let { DataTransferManager.restoreBackup(it, settings, shopping, priceBook) }
+            val restored = json?.let { DataTransferManager.restoreBackup(it, settings, shopping, priceBook, pro) }
             if (restored != null) { onRestored(restored); message = "بازیابی اطلاعات با موفقیت انجام شد." }
             else message = "فایل پشتیبان معتبر نبود یا قابل خواندن نیست."
         }
@@ -359,9 +366,9 @@ fun DataToolsScreen(
         }
         item {
             SettingsCard("Backup / Restore", Icons.Outlined.Backup) {
-                Button(onClick = { runCatching { DataTransferManager.createBackup(context, history, settings, shopping, priceBook) }.onSuccess { DataTransferManager.shareFile(context, it, "application/json", "Backup حسابیار") }.onFailure { message = "ساخت Backup ناموفق بود." } }, modifier = Modifier.fillMaxWidth()) { Text("ساخت و اشتراک Backup") }
+                Button(onClick = { runCatching { DataTransferManager.createBackup(context, history, settings, shopping, priceBook, pro) }.onSuccess { DataTransferManager.shareFile(context, it, "application/json", "Backup حسابیار") }.onFailure { message = "ساخت Backup ناموفق بود." } }, modifier = Modifier.fillMaxWidth()) { Text("ساخت و اشتراک Backup") }
                 OutlinedButton(onClick = { restoreLauncher.launch(arrayOf("application/json", "text/*")) }, modifier = Modifier.fillMaxWidth()) { Text("بازیابی از Backup") }
-                Text("Backup شامل تاریخچه، تنظیمات، پروفایل، سبد خرید و دفترچه قیمت است.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Backup شامل تاریخچه، تنظیمات، پروفایل، سبد خرید، دفترچه قیمت و داده‌های ابزارهای حرفه‌ای نسخه 3 است.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         if (message.isNotBlank()) item { Text(message, color = MaterialTheme.colorScheme.primary) }

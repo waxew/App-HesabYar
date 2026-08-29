@@ -3,4 +3,11 @@
 <resources>
     <string name="app_name">حسابیار</string>
     <string name="widget_description">نمایش آخرین نتیجه و دسترسی سریع به تخفیف، سود و درصد</string>
+    <!-- Labelهای Shortcut باید Resource باشند تا AAPT آن‌ها را برای تمام Variantها Link کند. -->
+    <string name="shortcut_discount_short">تخفیف</string>
+    <string name="shortcut_discount_long">محاسبه سریع تخفیف</string>
+    <string name="shortcut_profit_short">سود</string>
+    <string name="shortcut_profit_long">محاسبه سریع سود</string>
+    <string name="shortcut_percentage_short">درصد</string>
+    <string name="shortcut_percentage_long">محاسبه سریع درصد</string>
 </resources>

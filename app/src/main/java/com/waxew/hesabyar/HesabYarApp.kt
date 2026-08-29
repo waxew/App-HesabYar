@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
 
 /** مقصدهای اصلی خارج از ماشین‌حساب‌ها. */
 enum class RootPage {
-    HOME, BUYER, SELLER, PRICE_BOOK, SCANNER, REPORTS, DATA_TOOLS,
+    HOME, BUYER, SELLER, PRICE_BOOK, SCANNER, PRO_TOOLS, REPORTS, DATA_TOOLS,
     HISTORY, SETTINGS, ABOUT_US, CONTACT_US, ABOUT_APP
 }
 
@@ -225,6 +225,7 @@ private fun HesabYarShell(
                     RootPage.SELLER -> SellerAssistantScreen(currency, ::saveHistory)
                     RootPage.PRICE_BOOK -> PriceBookScreen(currency)
                     RootPage.SCANNER -> ScannerScreen()
+                    RootPage.PRO_TOOLS -> ProToolsScreen(currency, history, settingsRepository)
                     RootPage.REPORTS -> ReportsScreen(history)
                     RootPage.DATA_TOOLS -> DataToolsScreen(history, settingsRepository) { restored ->
                         history.clear(); history.addAll(restored.history); onHistoryChanged()
@@ -300,6 +301,7 @@ private fun AppDrawer(
             DrawerDestination("دستیار فروشنده", Icons.Outlined.Storefront, currentPage == RootPage.SELLER) { onNavigate(RootPage.SELLER) }
             DrawerDestination("دفترچه قیمت", Icons.Outlined.PriceChange, currentPage == RootPage.PRICE_BOOK) { onNavigate(RootPage.PRICE_BOOK) }
             DrawerDestination("اسکن قیمت و بارکد", Icons.Outlined.DocumentScanner, currentPage == RootPage.SCANNER) { onNavigate(RootPage.SCANNER) }
+            DrawerDestination("ابزارهای حرفه‌ای", Icons.Outlined.AutoAwesome, currentPage == RootPage.PRO_TOOLS) { onNavigate(RootPage.PRO_TOOLS) }
             DrawerDestination("گزارش‌ها", Icons.Outlined.BarChart, currentPage == RootPage.REPORTS) { onNavigate(RootPage.REPORTS) }
             DrawerDestination("پشتیبان‌گیری و خروجی", Icons.Outlined.Backup, currentPage == RootPage.DATA_TOOLS) { onNavigate(RootPage.DATA_TOOLS) }
             DrawerDestination("تنظیمات", Icons.Outlined.Settings, currentPage == RootPage.SETTINGS) { onNavigate(RootPage.SETTINGS) }
@@ -375,6 +377,16 @@ private fun HomeScreen(currency: CurrencyMode, onTool: (CalculatorKind) -> Unit,
             }
         }
 
+        item {
+            ElevatedCard(onClick = { onNavigate(RootPage.PRO_TOOLS) }, modifier = Modifier.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) { Text("مرکز ابزارهای حرفه‌ای", fontWeight = FontWeight.Bold, fontSize = 18.sp); Text("اقساط، مارکت‌پلیس، فاکتور، نمودار قیمت، Backup امن و بیشتر", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                }
+            }
+        }
+
         item { SectionTitle("ماشین‌حساب‌ها") }
         items(tools.chunked(2)) { rowTools ->
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
@@ -403,22 +415,37 @@ private fun FeatureCard(title: String, subtitle: String, icon: ImageVector, modi
     }
 }
 
-/** تاریخچه محلی با تأیید قبل از حذف کامل. */
+/** تاریخچه محلی با جستجو، Favorite و تأیید قبل از حذف کامل. */
 @Composable
 private fun HistoryScreen(history: SnapshotStateList<HistoryEntry>, onChanged: () -> Unit) {
+    val context = LocalContext.current
+    val pro = remember { ProRepository(context) }
     var confirmClear by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var favorites by remember { mutableStateOf(pro.loadFavoriteHistoryIds()) }
+    val visible = history.filter { entry ->
+        query.isBlank() || entry.title.contains(query, true) || entry.details.contains(query, true) || entry.result.contains(query, true)
+    }.sortedByDescending { it.id in favorites }
+
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column { Text("تاریخچه", fontSize = 26.sp, fontWeight = FontWeight.Bold); Text("آخرین محاسبات روی همین گوشی ذخیره می‌شوند.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                Column { Text("تاریخچه", fontSize = 26.sp, fontWeight = FontWeight.Bold); Text("جستجو و ستاره‌گذاری محاسبات روی همین گوشی.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 if (history.isNotEmpty()) TextButton(onClick = { confirmClear = true }) { Text("پاک کردن") }
             }
         }
-        if (history.isEmpty()) item { EmptyState(Icons.Outlined.History, "هنوز محاسبه‌ای ذخیره نشده") }
-        else items(history, key = { it.id }) { entry ->
+        item { OutlinedTextField(query, { query = it.take(80) }, label = { Text("جستجو در محاسبات") }, leadingIcon = { Icon(Icons.Outlined.Search, null) }, modifier = Modifier.fillMaxWidth(), singleLine = true) }
+        if (visible.isEmpty()) item { EmptyState(Icons.Outlined.History, if (query.isBlank()) "هنوز محاسبه‌ای ذخیره نشده" else "نتیجه‌ای پیدا نشد") }
+        else items(visible, key = { it.id }) { entry ->
             ElevatedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(entry.title, fontWeight = FontWeight.Bold); Text(entry.createdAt.shortDate(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) { Text(entry.title, fontWeight = FontWeight.Bold); Text(entry.createdAt.shortDate(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        IconButton(onClick = {
+                            favorites = favorites.toMutableSet().apply { if (!add(entry.id)) remove(entry.id) }
+                            pro.saveFavoriteHistoryIds(favorites)
+                        }) { Icon(if (entry.id in favorites) Icons.Outlined.Star else Icons.Outlined.StarBorder, "علاقه‌مندی") }
+                    }
                     Text(entry.details, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(entry.result, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
@@ -429,7 +456,7 @@ private fun HistoryScreen(history: SnapshotStateList<HistoryEntry>, onChanged: (
         onDismissRequest = { confirmClear = false },
         title = { Text("پاک کردن تاریخچه؟") },
         text = { Text("تمام محاسبات ذخیره‌شده حذف می‌شوند.") },
-        confirmButton = { TextButton(onClick = { history.clear(); onChanged(); confirmClear = false }) { Text("حذف") } },
+        confirmButton = { TextButton(onClick = { history.clear(); favorites = emptySet(); pro.saveFavoriteHistoryIds(emptySet()); onChanged(); confirmClear = false }) { Text("حذف") } },
         dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("لغو") } }
     )
 }
@@ -470,19 +497,26 @@ private fun ContactUsScreen() {
     val context = LocalContext.current
     InfoPage("تماس با ما", Icons.Outlined.ContactSupport) {
         Text("برای پیشنهاد، گزارش خطا یا ارتباط با تیم توسعه می‌توانی از ایمیل پشتیبانی استفاده کنی.")
-        Button(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:as.team.support@gmail.com"))) } }) { Icon(Icons.Outlined.Email, null); Spacer(Modifier.width(8.dp)); Text("as.team.support@gmail.com") }
+        Button(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:AS.Developers.Support@Gmail.Com"))) } }) { Icon(Icons.Outlined.Email, null); Spacer(Modifier.width(8.dp)); Text("AS.Developers.Support@Gmail.Com") }
         Spacer(Modifier.height(48.dp))
         HorizontalDivider()
-        Text("گروه توسعه فناوری و نرم افزاری as Team", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-        Text("as.team.support@gmail.com", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Develop by AS Team Group", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Text("AS.Developers.Support@Gmail.Com", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
 private fun AboutAppScreen() = InfoPage("درباره نرم‌افزار", Icons.Outlined.Info) {
-    Text("حسابیار دستیار محاسبات خرید، تخفیف، سود، قیمت‌گذاری و مدیریت سبک قیمت‌هاست.")
-    Text("محاسبات و اطلاعات اصلی به‌صورت محلی روی دستگاه نگهداری می‌شوند و برای استفاده روزمره به حساب کاربری نیاز نیست.")
-    Text("نسخه ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+    // صفحه درباره فقط توضیح کاربردی، راه ارتباطی و نسخه را نشان می‌دهد؛ Package ID نمایش داده نمی‌شود.
+    Text("حسابیار دستیار آفلاین محاسبات خرید، تخفیف، سود، قیمت‌گذاری، فاکتور و مدیریت سبک قیمت‌هاست.")
+    Text("اطلاعات اصلی روی خود دستگاه نگهداری می‌شوند و برای استفاده روزمره به حساب کاربری نیاز نیست.")
+    HorizontalDivider()
+    Text("راه‌های ارتباطی با ما:", fontWeight = FontWeight.Bold)
+    Text("AS.Developers.Support@Gmail.Com")
+    Spacer(Modifier.height(24.dp))
+    HorizontalDivider()
+    Text("Develop by AS Team Group", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    Text("نسخه ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
 }
 
 @Composable
@@ -496,7 +530,7 @@ private fun InfoPage(title: String, icon: ImageVector, content: @Composable Colu
 
 private fun rootPageTitle(page: RootPage): String = when (page) {
     RootPage.HOME -> "حسابیار"; RootPage.BUYER -> "دستیار خرید"; RootPage.SELLER -> "دستیار فروشنده"
-    RootPage.PRICE_BOOK -> "دفترچه قیمت"; RootPage.SCANNER -> "اسکن"; RootPage.REPORTS -> "گزارش‌ها"
+    RootPage.PRICE_BOOK -> "دفترچه قیمت"; RootPage.SCANNER -> "اسکن"; RootPage.PRO_TOOLS -> "ابزارهای حرفه‌ای"; RootPage.REPORTS -> "گزارش‌ها"
     RootPage.DATA_TOOLS -> "خروجی و پشتیبان"; RootPage.HISTORY -> "تاریخچه"; RootPage.SETTINGS -> "تنظیمات"
     RootPage.ABOUT_US -> "درباره ما"; RootPage.CONTACT_US -> "تماس با ما"; RootPage.ABOUT_APP -> "درباره نرم‌افزار"
 }

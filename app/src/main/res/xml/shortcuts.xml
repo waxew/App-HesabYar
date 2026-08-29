@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shortcutهای ثابت حسابیار با نگه‌داشتن آیکون برنامه در Launcher نمایش داده می‌شوند. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="discount" android:enabled="true" android:icon="@drawable/ic_launcher" android:shortcutShortLabel="@string/shortcut_discount_short" android:shortcutLongLabel="@string/shortcut_discount_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.waxew.hesabyar" android:targetClass="com.waxew.hesabyar.MainActivity">
+            <extra android:name="hesabyar_tool" android:value="DISCOUNT" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="profit" android:enabled="true" android:icon="@drawable/ic_launcher" android:shortcutShortLabel="@string/shortcut_profit_short" android:shortcutLongLabel="@string/shortcut_profit_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.waxew.hesabyar" android:targetClass="com.waxew.hesabyar.MainActivity">
+            <extra android:name="hesabyar_tool" android:value="PROFIT" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="percentage" android:enabled="true" android:icon="@drawable/ic_launcher" android:shortcutShortLabel="@string/shortcut_percentage_short" android:shortcutLongLabel="@string/shortcut_percentage_long">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.waxew.hesabyar" android:targetClass="com.waxew.hesabyar.MainActivity">
+            <extra android:name="hesabyar_tool" android:value="PERCENTAGE" />
+        </intent>
+    </shortcut>
+</shortcuts>

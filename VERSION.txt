@@ -1,6 +1,4 @@
-HesabYar
-versionName=2.0.0
-versionCode=3
+HesabYar 3.0.0
+versionCode=4
 applicationId=com.waxew.hesabyar
-minSdk=24
-targetSdk=35
+Status: production release source; CI verified before materialization
