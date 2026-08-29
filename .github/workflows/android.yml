@@ -1,142 +1,56 @@
-# نام Workflow در تب Actions گیت‌هاب.
+# CI استاندارد حسابیار؛ فقط سورس واقعی مخزن را تست و Build می‌کند.
 name: Android CI
 
-# علاوه بر main، شاخه نسخه ۳ نیز برای Materialize و آزمون کامل Build اجرا می‌شود.
 on:
   push:
-    branches: [ main, feature/hesabyar-v3 ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-
-# فقط Workflow شاخه feature اجازه دارد پس از Build موفق Overlay را به سورس واقعی تبدیل و Commit کند.
-permissions:
-  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # سورس آخرین Commit را داخل Runner دریافت می‌کند.
+      # دریافت همان Commitی که قرار است Test/Build شود.
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v5
 
-      # سورس اصلی نسخه ۳ از Overlay کنترل‌شده بازسازی می‌شود.
-      - name: Materialize staged v3 source
-        shell: bash
-        run: |
-          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null; then
-            cat ci/v3-overlay.b64.part* | base64 -d > /tmp/hesabyar-v3-overlay.tar.gz
-            echo '0bd0d543825d71e82dbbf4d9a097447a8462fe19f4688fbbf13fc9717b1e1595  /tmp/hesabyar-v3-overlay.tar.gz' | sha256sum -c -
-            tar -xzf /tmp/hesabyar-v3-overlay.tar.gz -C .
-          fi
-
-      # اصلاحات کوچک نهایی به‌صورت متن خوانا اعمال می‌شوند تا انتقال باینری ثانویه لازم نباشد.
-      - name: Apply v3 final source fixes
-        shell: bash
-        run: |
-          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null; then
-            python3 <<'PY'
-          from pathlib import Path
-
-          # Android Shortcut label باید Resource Reference باشد؛ متن مستقیم توسط AAPT پذیرفته نمی‌شود.
-          shortcuts = Path('app/src/main/res/xml/shortcuts.xml')
-          text = shortcuts.read_text(encoding='utf-8')
-          text = text.replace('android:shortcutShortLabel="تخفیف" android:shortcutLongLabel="محاسبه سریع تخفیف"', 'android:shortcutShortLabel="@string/shortcut_discount_short" android:shortcutLongLabel="@string/shortcut_discount_long"')
-          text = text.replace('android:shortcutShortLabel="سود" android:shortcutLongLabel="محاسبه سریع سود"', 'android:shortcutShortLabel="@string/shortcut_profit_short" android:shortcutLongLabel="@string/shortcut_profit_long"')
-          text = text.replace('android:shortcutShortLabel="درصد" android:shortcutLongLabel="محاسبه سریع درصد"', 'android:shortcutShortLabel="@string/shortcut_percentage_short" android:shortcutLongLabel="@string/shortcut_percentage_long"')
-          shortcuts.write_text(text, encoding='utf-8')
-
-          strings = Path('app/src/main/res/values/strings.xml')
-          text = strings.read_text(encoding='utf-8')
-          if 'shortcut_discount_short' not in text:
-              labels = '''    <!-- Labelهای Shortcut باید Resource باشند تا AAPT آن‌ها را برای تمام Variantها Link کند. -->
-              <string name="shortcut_discount_short">تخفیف</string>
-              <string name="shortcut_discount_long">محاسبه سریع تخفیف</string>
-              <string name="shortcut_profit_short">سود</string>
-              <string name="shortcut_profit_long">محاسبه سریع سود</string>
-              <string name="shortcut_percentage_short">درصد</string>
-              <string name="shortcut_percentage_long">محاسبه سریع درصد</string>
-          '''
-              text = text.replace('</resources>', labels + '</resources>')
-          strings.write_text(text, encoding='utf-8')
-
-          # Backup عمومی نسخه ۳ باید ProRepository را هم پوشش دهد.
-          advanced = Path('app/src/main/java/com/waxew/hesabyar/AdvancedScreens.kt')
-          text = advanced.read_text(encoding='utf-8')
-          marker = '    val priceBook = remember { PriceBookRepository(context) }\n'
-          if 'val pro = remember { ProRepository(context) }' not in text:
-              text = text.replace(marker, marker + '    // داده‌های ابزارهای حرفه‌ای نسخه 3 نیز در Backup عمومی نگهداری می‌شوند.\n    val pro = remember { ProRepository(context) }\n', 1)
-          text = text.replace('DataTransferManager.restoreBackup(it, settings, shopping, priceBook)', 'DataTransferManager.restoreBackup(it, settings, shopping, priceBook, pro)')
-          text = text.replace('DataTransferManager.createBackup(context, history, settings, shopping, priceBook)', 'DataTransferManager.createBackup(context, history, settings, shopping, priceBook, pro)')
-          text = text.replace('Backup شامل تاریخچه، تنظیمات، پروفایل، سبد خرید و دفترچه قیمت است.', 'Backup شامل تاریخچه، تنظیمات، پروفایل، سبد خرید، دفترچه قیمت و داده‌های ابزارهای حرفه‌ای نسخه 3 است.')
-          advanced.write_text(text, encoding='utf-8')
-
-          # Restore رمزدار علاوه بر Repositoryها، تاریخچه را نیز فوراً ذخیره می‌کند.
-          v3 = Path('app/src/main/java/com/waxew/hesabyar/V3Screens.kt')
-          text = v3.read_text(encoding='utf-8')
-          old = 'DataTransferManager.restoreBackup(json,settings,shopping,priceBook,pro)?:error("Backup نامعتبر");status="Restore انجام شد؛ برای Refresh کامل برنامه را دوباره باز کن."'
-          new = 'val restored=DataTransferManager.restoreBackup(json,settings,shopping,priceBook,pro)?:error("Backup نامعتبر");HistoryRepository(context).save(restored.history);status="Restore کامل انجام شد؛ برای Refresh کامل برنامه را دوباره باز کن."'
-          text = text.replace(old, new)
-          v3.write_text(text, encoding='utf-8')
-
-          # اطلاعات تماس و Footer طبق استاندارد مشترک برنامه‌های Android App به‌روز می‌شوند.
-          app = Path('app/src/main/java/com/waxew/hesabyar/HesabYarApp.kt')
-          text = app.read_text(encoding='utf-8')
-          text = text.replace('as.team.support@gmail.com', 'AS.Developers.Support@Gmail.Com')
-          text = text.replace('گروه توسعه فناوری و نرم افزاری as Team', 'Develop by AS Team Group')
-          old_about = '''    Text("حسابیار دستیار محاسبات خرید، تخفیف، سود، قیمت‌گذاری و مدیریت سبک قیمت‌هاست.")
-              Text("محاسبات و اطلاعات اصلی به‌صورت محلی روی دستگاه نگهداری می‌شوند و برای استفاده روزمره به حساب کاربری نیاز نیست.")
-              Text("نسخه ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)'''
-          new_about = '''    // صفحه درباره فقط توضیح کاربردی، راه ارتباطی و نسخه را نشان می‌دهد؛ Package ID نمایش داده نمی‌شود.
-              Text("حسابیار دستیار آفلاین محاسبات خرید، تخفیف، سود، قیمت‌گذاری، فاکتور و مدیریت سبک قیمت‌هاست.")
-              Text("اطلاعات اصلی روی خود دستگاه نگهداری می‌شوند و برای استفاده روزمره به حساب کاربری نیاز نیست.")
-              HorizontalDivider()
-              Text("راه‌های ارتباطی با ما:", fontWeight = FontWeight.Bold)
-              Text("AS.Developers.Support@Gmail.Com")
-              Spacer(Modifier.height(24.dp))
-              HorizontalDivider()
-              Text("Develop by AS Team Group", fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-              Text("نسخه ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())'''
-          text = text.replace(old_about, new_about)
-          app.write_text(text, encoding='utf-8')
-
-          version = Path('VERSION.txt')
-          version.write_text('HesabYar 3.0.0\nversionCode=4\napplicationId=com.waxew.hesabyar\nStatus: production release source; CI verified before materialization\n', encoding='utf-8')
-          PY
-          fi
-
+      # Android Gradle Plugin پروژه با JDK 17 تست می‌شود.
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
+      # مخزن Wrapper ندارد؛ Gradle 8.9 به‌صورت کنترل‌شده در Runner آماده می‌شود.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      # ابتدا Unit Test و سپس هر دو BuildType اجرا می‌شوند.
+      # Unit Test پیش از تولید APK اجرا می‌شود تا خطای موتورهای محاسباتی Release نشود.
       - name: Run unit tests
         run: gradle :app:testDebugUnitTest --stacktrace
 
+      # هر دو Variant ساخته می‌شوند تا خطای مخصوص Debug یا Release پنهان نماند.
       - name: Build APKs
         run: gradle :app:assembleDebug :app:assembleRelease --stacktrace
 
+      # Debug برای تست توسعه نگهداری می‌شود.
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: HesabYar-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
+      # Release عمومی در CI بدون Keystore خصوصی ساخته می‌شود و خارج از GitHub امضا خواهد شد.
       - name: Upload unsigned release APK
         uses: actions/upload-artifact@v4
         with:
           name: HesabYar-release-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
 
+      # Snapshot دقیق سورس همان Build برای بسته تحویل خصوصی ذخیره می‌شود.
       - name: Prepare source snapshot
         run: |
           tar \
@@ -153,19 +67,3 @@ jobs:
         with:
           name: HesabYar-source-snapshot
           path: HesabYar-source-snapshot.tar.gz
-
-      # فقط پس از موفقیت Test و Build، سورس بازسازی‌شده به فایل‌های عادی مخزن تبدیل می‌شود.
-      - name: Commit materialized v3 source
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/feature/hesabyar-v3' }}
-        shell: bash
-        run: |
-          if compgen -G 'ci/v3-overlay.b64.part*' > /dev/null; then
-            rm -f ci/v3-overlay.b64.part* ci/v3-fix-overlay.b64.part*
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add -A
-            if ! git diff --cached --quiet; then
-              git commit -m 'Materialize HesabYar v3 source after successful CI'
-              git push origin HEAD:feature/hesabyar-v3
-            fi
-          fi
