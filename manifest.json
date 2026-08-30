@@ -1,7 +1,7 @@
 {
   "name": "حسابیار",
   "short_name": "حسابیار",
-  "description": "ابزار محاسبات مالی، درصد، تخفیف، سود، مالیات و نقطه سربه‌سر",
+  "description": "ابزار مالی، دستیار خرید و فروش، دفترچه قیمت و مرکز ابزارهای حرفه‌ای حسابیار",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
@@ -15,6 +15,29 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "محاسبه تخفیف",
+      "short_name": "تخفیف",
+      "description": "باز کردن مستقیم ابزار تخفیف حسابیار",
+      "url": "./?tool=discount",
+      "icons": [{ "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "محاسبه سود",
+      "short_name": "سود",
+      "description": "باز کردن مستقیم ابزار سود حسابیار",
+      "url": "./?tool=profit",
+      "icons": [{ "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "محاسبه درصد",
+      "short_name": "درصد",
+      "description": "باز کردن مستقیم ابزار درصد حسابیار",
+      "url": "./?tool=percentage",
+      "icons": [{ "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml" }]
     }
   ]
 }
