@@ -1,0 +1,77 @@
+/*
+ * تکمیل رابط قابلیت‌های پیشرفته حسابیار Web.
+ * شامل Slider، پیام‌ها، جدول‌های تحلیلی و حالت چاپ/PDF فاکتور.
+ */
+
+/* Slider در What-if با جهت استاندارد عددی نمایش داده می‌شود. */
+.range-field { display: grid; gap: 8px; margin-top: 12px; }
+.range-field label { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; font-weight: 800; }
+.range-field input[type="range"] { width: 100%; accent-color: var(--primary); direction: ltr; }
+
+/* هشدارهای معنایی برای تحلیل قیمت و فروشنده. */
+.notice {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.9;
+}
+.notice.warning { border-color: color-mix(in srgb, var(--negative) 35%, var(--line)); color: var(--negative); }
+.notice.success { border-color: color-mix(in srgb, var(--positive) 35%, var(--line)); color: var(--positive); }
+
+/* کنترل‌های چندگزینه‌ای کوچک. */
+.segmented { display: flex; gap: 6px; flex-wrap: wrap; }
+.segmented button {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 11px;
+}
+.segmented button.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* کارت مخصوص فاکتور چاپی. */
+.print-invoice {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.print-invoice h2 { margin: 0 0 4px; }
+.print-invoice .invoice-meta { color: var(--muted); font-size: 11px; }
+.print-invoice table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.print-invoice th, .print-invoice td { padding: 9px 7px; border-bottom: 1px solid var(--line); font-size: 11px; text-align: right; }
+.print-invoice td.num { text-align: left; direction: ltr; }
+.print-invoice .invoice-summary { display: grid; gap: 6px; width: min(360px, 100%); margin: 18px 0 0 auto; }
+.print-invoice .invoice-summary div { display: flex; justify-content: space-between; gap: 12px; }
+.print-invoice .invoice-summary strong { direction: ltr; }
+
+/* برچسب وضعیت پشتیبانی مرورگر. */
+.support-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 10px;
+}
+.support-chip.ok { color: var(--positive); }
+.support-chip.bad { color: var(--negative); }
+
+/* حالت چاپ فقط محتوای فاکتور را نگه می‌دارد. */
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .topbar, .bottom-nav, .connection-badge, .web-drawer, .drawer-overlay, .panel-head, .no-print, .web-toast { display: none !important; }
+  .page-shell { width: 100% !important; margin: 0 !important; }
+  .panel, .print-invoice { border: 0 !important; box-shadow: none !important; background: #fff !important; }
+  .panel-body { padding: 0 !important; }
+  .print-invoice th, .print-invoice td { border-color: #bbb !important; color: #000 !important; }
+  .print-invoice .invoice-meta { color: #444 !important; }
+}
