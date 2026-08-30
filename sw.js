@@ -2,7 +2,7 @@
  * Service Worker نسخه وب حسابیار.
  * Scope این فایل به‌صورت خودکار همان /App-HesabYar/ است و به پروژه‌های دیگر دسترسی ندارد.
  */
-const CACHE_NAME = 'hesabyar-pwa-v2';
+const CACHE_NAME = 'hesabyar-pwa-v3';
 
 /* فایل‌های ضروری نسخه کامل‌تر Web/Android Parity. */
 const APP_SHELL = [
@@ -10,8 +10,10 @@ const APP_SHELL = [
   './index.html',
   './styles.css',
   './parity.css',
+  './compat.css',
   './app.js',
   './parity.js',
+  './compat.js',
   './manifest.json',
   './icon.svg'
 ];
