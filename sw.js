@@ -2,19 +2,21 @@
  * Service Worker نسخه وب حسابیار.
  * Scope این فایل به‌صورت خودکار همان /App-HesabYar/ است و به پروژه‌های دیگر دسترسی ندارد.
  */
-const CACHE_NAME = 'hesabyar-pwa-v1';
+const CACHE_NAME = 'hesabyar-pwa-v2';
 
-/* فایل‌های ضروری برای اجرای کامل آفلاین برنامه. */
+/* فایل‌های ضروری نسخه کامل‌تر Web/Android Parity. */
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
+  './parity.css',
   './app.js',
+  './parity.js',
   './manifest.json',
   './icon.svg'
 ];
 
-/* هنگام نصب، App Shell در Cache ذخیره می‌شود. */
+/* هنگام نصب، تمام App Shell در Cache ذخیره می‌شود. */
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -23,7 +25,7 @@ self.addEventListener('install', event => {
   );
 });
 
-/* Cache نسخه‌های قدیمی بعد از فعال شدن Worker پاک می‌شود. */
+/* Cache نسخه‌های قدیمی پس از فعال شدن Worker جدید پاک می‌شود. */
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -33,8 +35,8 @@ self.addEventListener('activate', event => {
 });
 
 /*
- * برای Navigation ابتدا شبکه امتحان می‌شود تا آخرین نسخه سریع دیده شود؛
- * در قطع اینترنت، همان نسخه Cache شده برگردانده می‌شود.
+ * Navigation شبکه‌اول است تا تغییرات جدید سریع دیده شوند؛
+ * در حالت آفلاین index Cache شده باز می‌شود.
  */
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
@@ -55,7 +57,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  /* فایل‌های استاتیک Cache First هستند و در پس‌زمینه از شبکه تازه می‌شوند. */
+  /* فایل‌های استاتیک Cache First هستند و در پس‌زمینه به نسخه جدید تازه می‌شوند. */
   event.respondWith(
     caches.match(event.request).then(cached => {
       const network = fetch(event.request)
