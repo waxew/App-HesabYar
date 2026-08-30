@@ -37,6 +37,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # قبل از انتشار Syntax تمام اسکریپت‌های Web و Service Worker بررسی می‌شود.
+      - name: Validate JavaScript syntax
+        run: |
+          node --check app.js
+          node --check parity.js
+          node --check compat.js
+          node --check sw.js
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
