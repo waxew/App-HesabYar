@@ -9,14 +9,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="حسابیار">
-  <meta name="web-build" content="2026-08-30.2">
+  <meta name="web-build" content="2026-08-30.3">
   <title>حسابیار | Web PWA</title>
   <!-- Manifest و آیکون برای نصب PWA. -->
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <!-- Design System پایه و سپس لایه parity رابط Android. -->
+  <!-- Design System پایه، لایه parity و قابلیت‌های پیشرفته. -->
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./parity.css">
+  <link rel="stylesheet" href="./compat.css">
 </head>
 <body>
   <!-- هدر ثابت: منوی همبرگری در سمت راست و کنترل‌های عمومی در سمت چپ. -->
@@ -56,8 +57,9 @@
     <div style="padding:24px;text-align:center;font-family:Tahoma,Arial,sans-serif">برای اجرای نسخه وب حسابیار JavaScript باید فعال باشد.</div>
   </noscript>
 
-  <!-- ابتدا موتور پایه محاسبات و سپس لایه قابلیت‌های Android اجرا می‌شود. -->
+  <!-- ابتدا موتور پایه، سپس لایه قابلیت‌های Android و در انتها تکمیل پیشرفته اجرا می‌شوند. -->
   <script src="./app.js" defer></script>
   <script src="./parity.js" defer></script>
+  <script src="./compat.js" defer></script>
 </body>
 </html>
