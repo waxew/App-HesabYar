@@ -1,29 +1,32 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <!-- ورودی مستقل نسخه وب حسابیار؛ دیگر از iframe یا پروژه واسط استفاده نمی‌کند. -->
+  <!-- ورودی مستقل نسخه وب حسابیار؛ رابط وب هم‌سطح‌تر با نسخه Android بارگذاری می‌شود. -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#315efb">
-  <meta name="description" content="نسخه وب مستقل حسابیار برای محاسبه تخفیف، سود، درصد، مالیات و نقطه سربه‌سر">
+  <meta name="description" content="نسخه وب مستقل حسابیار با دستیار خرید و فروش، دفترچه قیمت، ابزارهای حرفه‌ای، گزارش و PWA آفلاین">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="حسابیار">
-  <meta name="web-build" content="2026-08-30.1">
+  <meta name="web-build" content="2026-08-30.2">
   <title>حسابیار | Web PWA</title>
-  <!-- Manifest مشخصات نصب نسخه وب را به مرورگر اعلام می‌کند. -->
+  <!-- Manifest و آیکون برای نصب PWA. -->
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <!-- Design System پایه و سپس لایه parity رابط Android. -->
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./parity.css">
 </head>
 <body>
-  <!-- هدر ثابت نسخه وب. -->
+  <!-- هدر ثابت: منوی همبرگری در سمت راست و کنترل‌های عمومی در سمت چپ. -->
   <header class="topbar">
     <div class="brand">
+      <button id="menuButton" class="icon-button" type="button" title="منوی حسابیار" aria-label="منوی حسابیار">☰</button>
       <div class="brand-mark" aria-hidden="true">ح</div>
       <div class="brand-copy">
         <strong>حسابیار</strong>
-        <small>Web PWA · نسخه مستقل</small>
+        <small>Web PWA · Android Parity</small>
       </div>
     </div>
     <div class="header-actions">
@@ -32,27 +35,29 @@
     </div>
   </header>
 
-  <!-- app.js تمام صفحات و ابزارهای محاسباتی را داخل این ناحیه Render می‌کند. -->
+  <!-- صفحات برنامه توسط موتورهای Web داخل این ناحیه Render می‌شوند. -->
   <main id="app" class="page-shell"></main>
 
-  <!-- وضعیت اتصال برای تست سریع حالت آفلاین PWA. -->
+  <!-- وضعیت اتصال برای تست سریع PWA و حالت آفلاین. -->
   <div id="connectionBadge" class="connection-badge">در حال بررسی…</div>
 
-  <!-- نوار پایین مشترک صفحات اصلی. -->
+  <!-- Bottom Navigation مطابق ساختار اصلی Android: خانه، گزارش، تاریخچه، تنظیمات. -->
   <nav class="bottom-nav" aria-label="ناوبری اصلی">
     <button class="nav-button is-active" type="button" data-nav="home"><b aria-hidden="true">⌂</b><span>خانه</span></button>
+    <button class="nav-button" type="button" data-nav="reports"><b aria-hidden="true">▥</b><span>گزارش</span></button>
     <button class="nav-button" type="button" data-nav="history"><b aria-hidden="true">↺</b><span>تاریخچه</span></button>
     <button class="nav-button" type="button" data-nav="settings"><b aria-hidden="true">⚙</b><span>تنظیمات</span></button>
   </nav>
 
-  <!-- وضعیت اولیه Worker برای Home در DOM نگهداری می‌شود و app.js آن را به‌روزرسانی می‌کند. -->
+  <!-- وضعیت Worker برای صفحه تنظیمات. -->
   <span id="workerStatus" class="is-hidden">در حال ثبت</span>
 
   <noscript>
     <div style="padding:24px;text-align:center;font-family:Tahoma,Arial,sans-serif">برای اجرای نسخه وب حسابیار JavaScript باید فعال باشد.</div>
   </noscript>
 
-  <!-- فایل اصلی رابط و Calculation Engine وب. -->
+  <!-- ابتدا موتور پایه محاسبات و سپس لایه قابلیت‌های Android اجرا می‌شود. -->
   <script src="./app.js" defer></script>
+  <script src="./parity.js" defer></script>
 </body>
 </html>
