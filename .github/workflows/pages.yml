@@ -8,7 +8,9 @@ on:
     paths:
       - 'index.html'
       - 'styles.css'
+      - 'parity.css'
       - 'app.js'
+      - 'parity.js'
       - 'manifest.json'
       - 'sw.js'
       - 'icon.svg'
@@ -46,7 +48,7 @@ jobs:
       - name: Prepare web artifact
         run: |
           mkdir -p _site
-          cp index.html styles.css app.js manifest.json sw.js icon.svg _site/
+          cp index.html styles.css parity.css app.js parity.js manifest.json sw.js icon.svg _site/
           touch _site/.nojekyll
 
       # Artifact مخصوص Pages ساخته می‌شود.
@@ -55,7 +57,7 @@ jobs:
         with:
           path: _site
 
-      # انتشار Artifact روی آدرس https://waxew.github.io/App-HesabYar/ انجام می‌شود.
+      # انتشار Artifact روی آدرس پروژه انجام می‌شود.
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
