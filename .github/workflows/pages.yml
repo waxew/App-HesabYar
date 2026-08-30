@@ -2,29 +2,27 @@
 name: Deploy Web PWA
 
 on:
-  # هر تغییر در فایل‌های وب، انتشار Pages را اجرا می‌کند.
   push:
     branches: [ main ]
     paths:
       - 'index.html'
       - 'styles.css'
       - 'parity.css'
+      - 'compat.css'
       - 'app.js'
       - 'parity.js'
+      - 'compat.js'
       - 'manifest.json'
       - 'sw.js'
       - 'icon.svg'
       - '.github/workflows/pages.yml'
-  # امکان اجرای دستی از تب Actions برای عیب‌یابی محفوظ است.
   workflow_dispatch:
 
-# مجوزهای حداقلی رسمی GitHub Pages.
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# فقط آخرین انتشار Web نگه داشته می‌شود.
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -36,28 +34,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      # دریافت Commit فعلی پروژه.
       - name: Checkout
         uses: actions/checkout@v5
 
-      # پیکربندی رسمی GitHub Pages و استخراج Base Path پروژه.
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      # فقط فایل‌های لازم Web PWA در پوشه موقت انتشار قرار می‌گیرند.
+      # فقط فایل‌های موردنیاز Web/PWA در Artifact عمومی قرار می‌گیرند.
       - name: Prepare web artifact
         run: |
           mkdir -p _site
-          cp index.html styles.css parity.css app.js parity.js manifest.json sw.js icon.svg _site/
+          cp index.html styles.css parity.css compat.css app.js parity.js compat.js manifest.json sw.js icon.svg _site/
           touch _site/.nojekyll
 
-      # Artifact مخصوص Pages ساخته می‌شود.
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
 
-      # انتشار Artifact روی آدرس پروژه انجام می‌شود.
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
