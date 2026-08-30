@@ -1,0 +1,342 @@
+/*
+ * استایل مستقل نسخه وب حسابیار.
+ * این فایل بدون کتابخانه خارجی نوشته شده تا GitHub Pages و اجرای آفلاین PWA پایدار بماند.
+ */
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --text: #172033;
+  --muted: #697386;
+  --line: #e5eaf1;
+  --primary: #315efb;
+  --primary-strong: #2448c8;
+  --positive: #178854;
+  --negative: #c53b4d;
+  --shadow: 0 16px 42px rgba(28, 39, 60, 0.09);
+  color-scheme: light;
+}
+
+/* تم تاریک با همان ساختار و بدون وابستگی به سیستم‌عامل اجرا می‌شود. */
+html[data-theme="dark"] {
+  --bg: #0d1422;
+  --surface: #151e2f;
+  --surface-soft: #1b263a;
+  --text: #f4f7fb;
+  --muted: #a7b1c2;
+  --line: #2a3850;
+  --primary: #7794ff;
+  --primary-strong: #9aafff;
+  --positive: #52c98d;
+  --negative: #ff7d8b;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  color-scheme: dark;
+}
+
+/* Box sizing یکسان از اختلاف محاسبه عرض بین مرورگرها جلوگیری می‌کند. */
+* { box-sizing: border-box; }
+
+/* تنظیمات پایه صفحه و تایپوگرافی فارسی. */
+html { min-height: 100%; background: var(--bg); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Tahoma, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* فرم‌ها فونت صفحه را به ارث می‌برند. */
+button, input, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+/* هدر همیشه در دسترس می‌ماند و در حالت PWA با Safe Area سازگار است. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+/* برند حسابیار در سمت راست هدر. */
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #315efb, #7547de);
+  box-shadow: 0 10px 24px rgba(49, 94, 251, 0.25);
+  font-weight: 900;
+}
+.brand-copy { display: grid; gap: 2px; min-width: 0; }
+.brand-copy strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-copy small { color: var(--muted); font-size: 11px; }
+
+/* دکمه‌های بالای صفحه. */
+.header-actions { display: flex; gap: 7px; }
+.icon-button {
+  min-width: 42px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ظرف اصلی محتوا عرض مناسب موبایل و دسکتاپ را حفظ می‌کند. */
+.page-shell {
+  width: min(1040px, calc(100% - 24px));
+  margin: 22px auto 100px;
+}
+
+/* بنر معرفی نسخه وب. */
+.hero {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.hero-main, .hero-side {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.hero-main { padding: 24px; }
+.hero-main h1 { margin: 8px 0 8px; font-size: clamp(26px, 5vw, 42px); }
+.hero-main p { margin: 0; color: var(--muted); line-height: 2; font-size: 13px; }
+.eyebrow { color: var(--primary); font-size: 12px; font-weight: 900; }
+.hero-side { padding: 15px; display: grid; gap: 9px; align-content: center; }
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 15px;
+  background: var(--surface-soft);
+}
+.status-row span { color: var(--muted); font-size: 12px; }
+.status-row strong { font-size: 12px; }
+.online-dot { color: var(--positive); }
+
+/* عنوان هر بخش. */
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 2px 12px;
+}
+.section-heading h2 { margin: 0; font-size: 21px; }
+.section-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+
+/* شبکه ابزارهای محاسباتی. */
+.tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; }
+.tool-card {
+  text-align: right;
+  min-height: 150px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 7px 22px rgba(31, 45, 70, 0.04);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+.tool-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--primary) 55%, var(--line)); }
+.tool-icon {
+  width: 45px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  color: var(--primary);
+  font-size: 21px;
+}
+.tool-card strong { display: block; margin-bottom: 7px; }
+.tool-card span { display: block; color: var(--muted); line-height: 1.7; font-size: 11px; }
+
+/* کارت اصلی صفحات ابزار، تاریخچه و تنظیمات. */
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.panel-head h1 { margin: 0; font-size: 21px; }
+.panel-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+.panel-body { padding: 20px; }
+
+/* فرم محاسبات؛ در دسکتاپ دو ستونه و روی موبایل تک‌ستونه می‌شود. */
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.field { display: grid; gap: 7px; }
+.field.full { grid-column: 1 / -1; }
+.field label { font-size: 12px; font-weight: 800; }
+.field small { color: var(--muted); font-size: 10px; line-height: 1.7; }
+.input, .select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  outline: none;
+  background: var(--surface-soft);
+  color: var(--text);
+  direction: ltr;
+  text-align: left;
+}
+.select { direction: rtl; text-align: right; }
+.input:focus, .select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 13%, transparent); }
+
+/* خروجی محاسبه برجسته ولی خوانا نمایش داده می‌شود. */
+.result-card {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--line));
+  border-radius: 19px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+.result-card.is-negative { border-color: color-mix(in srgb, var(--negative) 35%, var(--line)); }
+.result-label { display: block; color: var(--muted); font-size: 11px; }
+.result-value { display: block; margin: 6px 0 12px; font-size: clamp(24px, 5vw, 34px); font-weight: 900; direction: ltr; text-align: right; }
+.result-list { display: grid; gap: 7px; }
+.result-row { display: flex; justify-content: space-between; gap: 12px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; }
+.result-row span { color: var(--muted); }
+.result-row strong { direction: ltr; text-align: left; }
+.result-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* پیام خطای محاسبه فقط هنگام ورودی نامعتبر دیده می‌شود. */
+.validation-message { margin-top: 12px; color: var(--negative); font-size: 12px; line-height: 1.8; }
+
+/* دکمه‌های اصلی و ثانویه. */
+.primary-button, .secondary-button, .danger-button {
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 13px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.primary-button { border: 0; background: var(--primary); color: #fff; }
+.primary-button:hover { background: var(--primary-strong); }
+.secondary-button { border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+.danger-button { border: 1px solid color-mix(in srgb, var(--negative) 35%, var(--line)); background: transparent; color: var(--negative); }
+
+/* تاریخچه محاسبات به‌صورت کارت‌های مستقل نمایش داده می‌شود. */
+.history-list { display: grid; gap: 10px; }
+.history-item { padding: 15px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface-soft); }
+.history-top { display: flex; justify-content: space-between; gap: 12px; }
+.history-item h3 { margin: 0; font-size: 14px; }
+.history-item time { color: var(--muted); font-size: 10px; }
+.history-item p { margin: 9px 0 4px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+.history-item strong { direction: ltr; display: inline-block; }
+.empty-state { padding: 34px 18px; text-align: center; color: var(--muted); line-height: 2; }
+
+/* ردیف‌های تنظیمات. */
+.settings-list { display: grid; gap: 10px; }
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+.setting-row strong { display: block; font-size: 13px; }
+.setting-row span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+
+/* نوار پایین برای حالت موبایل و PWA. */
+.bottom-nav {
+  position: fixed;
+  right: 50%;
+  bottom: 0;
+  z-index: 25;
+  width: min(640px, 100%);
+  transform: translateX(50%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 -10px 35px rgba(20, 30, 48, 0.08);
+}
+.nav-button {
+  display: grid;
+  gap: 3px;
+  place-items: center;
+  min-height: 49px;
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 10px;
+}
+.nav-button b { font-size: 18px; line-height: 1; }
+.nav-button.is-active { color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); font-weight: 900; }
+
+/* Badge اتصال آفلاین/آنلاین. */
+.connection-badge {
+  position: fixed;
+  left: 12px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 30;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  box-shadow: var(--shadow);
+}
+
+/* کلاس کمکی برای پنهان‌سازی المان‌ها. */
+.is-hidden { display: none !important; }
+
+/* چیدمان تبلت. */
+@media (max-width: 850px) {
+  .hero { grid-template-columns: 1fr; }
+  .tool-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* چیدمان موبایل. */
+@media (max-width: 560px) {
+  .page-shell { width: calc(100% - 16px); margin-top: 10px; }
+  .topbar { padding-inline: 9px; }
+  .brand-copy small { display: none; }
+  .hero-main { padding: 19px; }
+  .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tool-card { min-height: 136px; padding: 14px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .field.full { grid-column: auto; }
+  .panel-head, .panel-body { padding: 15px; }
+  .result-actions { flex-direction: column; }
+}
